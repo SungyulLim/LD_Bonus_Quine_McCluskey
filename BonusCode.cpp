@@ -270,16 +270,26 @@ void minimize(){
                 }
             }
 
-            bool alreadySelected = false;
-
-            for(int a = 0; a < ansCount; a++){
-                if(isSame(answer[a], PIs[tmp])){
-                    alreadySelected = true;
-                    break;
+            if(count == 1){
+                bool alreadySelected = false;
+                for(int a = 0; a < ansCount; a++){
+                    if(isSame(answer[a], PIs[tmp])){ 
+                        alreadySelected = true; 
+                        break; 
+                    }
                 }
-            }
-            if(!alreadySelected){
-                answer[ansCount++] = PIs[tmp];
+                    
+                if(!alreadySelected){
+                    answer[ansCount++] = PIs[tmp];
+                    // EPI가 커버하는 column 전체 제거 + 해당 row 제거
+                    for(int k = 0; k < fCount; k++){
+                        if(coverTable[tmp][k] == 1){
+                            for(int i = 0; i < piCount; i++)
+                                coverTable[i][k] = 0;
+                        }
+                    }
+                    flag = true;
+                }
             }
         }
 
@@ -290,28 +300,38 @@ void minimize(){
                 if(domi == 1){
                     for(int a = 0; a<fCount; a++){ // 1이면 k가 더 큰 경우 i를 제거해야함.
                         coverTable[i][a] = 0; 
-                        flag = true;
                     }
+                    flag = true;
                 }else if(domi == 2){
                     for(int a = 0; a<fCount; a++){
                         coverTable[k][a] = 0;
-                        flag = true; 
-                        break;
                     }
+                    flag = true; 
                 }
             }
         }
 
-        //병합 가능한 column 제거
+        // 병합 가능한 column 제거
         for(int j = 0; j < fCount-1; j++){
             for(int k = j+1; k < fCount; k++){
-                int domi = dominate(coverTable[j], coverTable[k], piCount);
-                if(domi == 1){  // k가 j를 지배 -> j 제거
-                    for(int a = 0; a < piCount; a++) 
-                    coverTable[a][j] = 0;
+                // j번째, k번째 열을 배열로 추출
+                int colJ[MAX], colK[MAX];
+                for(int a = 0; a < piCount; a++){
+                    colJ[a] = coverTable[a][j];
+                    colK[a] = coverTable[a][k];
+                }
+                
+                int domi = dominate(colJ, colK, piCount);
+                
+                if(domi == 1){// k가 j를 지배 -> j 제거
+                    for(int a = 0; a < piCount; a++) {
+                        coverTable[a][j] = 0;
+                    }
                     flag = true;
-                } else if(domi == 2){  // j가 k를 지배 -> k 제거
-                    for(int a = 0; a < piCount; a++) coverTable[a][k] = 0;
+                } else if(domi == 2){//j가 k를 지배 -> k 제거
+                    for(int a = 0; a < piCount; a++){
+                        coverTable[a][k] = 0;
+                    }
                     flag = true;
                 }
             }
@@ -351,8 +371,6 @@ int main() {
     
     // PI를 만드는 과정
     findPIs();
-
-
     minimize();
 
     // --- 결과 출력 ---
