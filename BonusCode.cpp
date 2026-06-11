@@ -291,7 +291,7 @@ void minimize(){
                         coverTable[k][a] = 0;
                         flag = true;
                     }
-                }else if(domi = 2){
+                }else if(domi == 2){
                     for(int a = 0; a<fCount; a++){ //k가 더 클경우 i 제거 후 break
                         coverTable[i][a] = 0; 
                         flag = true; break;
