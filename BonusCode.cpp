@@ -25,7 +25,8 @@ Implicant curList[MAX]; // 현재 비교 대상인 항 목록
 Implicant nextList[MAX];  // 병합 결과로 새로 생성된 항 목록
 
 int coverTable[MAX][MAX]; // PI(행) × 최소항(열) 커버 여부 표 (1이면 커버)
-
+Implicant answer[MAX];
+int ansCount = 0;
 
  // 이진수 표현에서 1의 개수를 세는 함수
 int countOnes(int x){
