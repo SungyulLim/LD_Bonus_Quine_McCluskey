@@ -221,10 +221,6 @@ void findPIs(){
     }
 }
 
-
-
-//void solve(bool rRow[MAX], bool rCol[MAX], int cost, int selCnt){}
-
 int dominate(int a[], int b[], int length){
     int a_bitmask = 0, b_bitmask = 0; 
     for(int i = 0; i < length; i++){ //배열을 비트마스크로
@@ -273,17 +269,17 @@ void minimize(){
                     tmp = i;
                 }
             }
-            if(count==1){ //answer에 넣고 테이블에서 제거
-                answer[ansCount] = PIs[tmp];
-                ansCount++;
-                for(int k = 0; k<fCount; k++){
-                    if(coverTable[tmp][k]==1){
-                        for(int i = 0; i<piCount; i++){
-                            coverTable[i][k]=0;
-                        }
-                    }
-                    coverTable[tmp][k]=0;
+
+            bool alreadySelected = false;
+
+            for(int a = 0; a < ansCount; a++){
+                if(isSame(answer[a], PIs[tmp])){
+                    alreadySelected = true;
+                    break;
                 }
+            }
+            if(!alreadySelected){
+                answer[ansCount++] = PIs[tmp];
             }
         }
 
@@ -292,33 +288,31 @@ void minimize(){
             for(int k = i+1; k<piCount; k++){
                 int domi = dominate(coverTable[i], coverTable[k], fCount);
                 if(domi == 1){
-                    for(int a = 0; a<fCount; a++){ //i 가 더 클경우 k 제거
-                        coverTable[k][a] = 0;
+                    for(int a = 0; a<fCount; a++){ // 1이면 k가 더 큰 경우 i를 제거해야함.
+                        coverTable[i][a] = 0; 
                         flag = true;
                     }
                 }else if(domi == 2){
-                    for(int a = 0; a<fCount; a++){ //k가 더 클경우 i 제거 후 break
-                        coverTable[i][a] = 0; 
-                        flag = true; break;
+                    for(int a = 0; a<fCount; a++){
+                        coverTable[k][a] = 0;
+                        flag = true; 
+                        break;
                     }
                 }
             }
         }
 
         //병합 가능한 column 제거
-        for(int j = 0; j<fCount; j++){
-            for(int k = j+1; k<fCount; k++){
+        for(int j = 0; j < fCount-1; j++){
+            for(int k = j+1; k < fCount; k++){
                 int domi = dominate(coverTable[j], coverTable[k], piCount);
-                if(domi == 1){
-                    for(int a = 0; a<piCount; a++){ //j 가 더 클경우 k 제거
-                        coverTable[k][a] = 0;
-                        flag = true;
-                    }
-                }else if(domi == 2){
-                    for(int a = 0; a<piCount; a++){ //k가 더 클경우 j 제거 후 break
-                        coverTable[j][a] = 0; 
-                        flag = true; break;
-                    }
+                if(domi == 1){  // k가 j를 지배 -> j 제거
+                    for(int a = 0; a < piCount; a++) 
+                    coverTable[a][j] = 0;
+                    flag = true;
+                } else if(domi == 2){  // j가 k를 지배 -> k 제거
+                    for(int a = 0; a < piCount; a++) coverTable[a][k] = 0;
+                    flag = true;
                 }
             }
         }
@@ -359,9 +353,7 @@ int main() {
     findPIs();
 
 
-    // 구현 필요!
-    // 만든 PI를 바탕으로 Finding a minimum cover
-    //minimize();
+    minimize();
 
     // --- 결과 출력 ---
     return 0;
