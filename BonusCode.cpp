@@ -246,7 +246,6 @@ int dominate(int a[], int b[], int length){
 
 
 void minimize(){
-
     //coverTable 채우기
     for(int i = 0; i<piCount; i++){
         for(int j = 0; j<fCount; j++){
@@ -267,6 +266,7 @@ void minimize(){
         for(int j = 0; j<fCount; j++){
             int count = 0;
             int tmp = 0;
+
             for(int i = 0; i<piCount; i++){ //column의 1 수를 세어 1이면 EPI
                 if(coverTable[i][j]==1){
                     count++;
@@ -277,6 +277,11 @@ void minimize(){
                 answer[ansCount] = PIs[tmp];
                 ansCount++;
                 for(int k = 0; k<fCount; k++){
+                    if(coverTable[tmp][k]==1){
+                        for(int i = 0; i<piCount; i++){
+                            coverTable[i][k]=0;
+                        }
+                    }
                     coverTable[tmp][k]=0;
                 }
             }
