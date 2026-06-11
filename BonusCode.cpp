@@ -222,10 +222,106 @@ void findPIs(){
 
 
 
-/*
-void solve(bool rRow[MAX], bool rCol[MAX], int cost, int selCnt){}
-void minimize(){}
-*/
+//void solve(bool rRow[MAX], bool rCol[MAX], int cost, int selCnt){}
+
+int dominate(int a[], int b[], int length){
+    int a_bitmask = 0, b_bitmask = 0; 
+    for(int i = 0; i < length; i++){ //배열을 비트마스크로
+        if(a[i]==1){
+            a_bitmask |= (1 << i);
+        }
+        if(b[i]==1){
+            b_bitmask |= (1 << i);
+        }
+    }
+
+    if((a_bitmask & b_bitmask) == a_bitmask){ //a가 b를 포함
+        return 1;
+    } else if((a_bitmask & b_bitmask) == b_bitmask){ //b가 a를 포함
+        return 2;
+    }
+    else{ return 0;} //포함하지않음
+}
+
+
+void minimize(){
+
+    //coverTable 채우기
+    for(int i = 0; i<piCount; i++){
+        for(int j = 0; j<fCount; j++){
+            coverTable[i][j]=0;
+            for(int k = 0; k<PIs[i].mCount; k++){ //해당 좌표와 PI가 보유한 Minterm정보가 동일한 경우 1로 수정
+                if(fMinterms[j]==PIs[i].minterms[k]){
+                    coverTable[i][j]=1;
+                }
+            }
+        }
+    }
+
+    bool flag = true;
+    while(flag){
+        flag = false;
+
+        //EPI제거 
+        for(int j = 0; j<fCount; j++){
+            int count = 0;
+            int tmp = 0;
+            for(int i = 0; i<piCount; i++){ //column의 1 수를 세어 1이면 EPI
+                if(coverTable[i][j]==1){
+                    count++;
+                    tmp = i;
+                }
+            }
+            if(count=1){ //answer에 넣고 테이블에서 제거
+                answer[ansCount] = PIs[tmp];
+                ansCount++;
+                for(int k = 0; k<fCount; k++){
+                    coverTable[tmp][k]=0;
+                }
+            }
+        }
+
+        //병합가능한 row 제거
+        for(int i = 0; i<piCount-1; i++){
+            for(int k = i+1; k<piCount; k++){
+                int domi = dominate(coverTable[i], coverTable[k], fCount);
+                if(domi = 1){
+                    for(int a = 0; a<fCount; a++){ //i 가 더 클경우 k 제거
+                        coverTable[k][a] = 0;
+                        flag = true;
+                    }
+                }else if(domi = 2){
+                    for(int a = 0; a<fCount; a++){ //k가 더 클경우 i 제거 후 break
+                        coverTable[i][a] = 0; 
+                        flag = true; break;
+                    }
+                }
+            }
+        }
+
+        //병합 가능한 column 제거
+        for(int j = 0; j<fCount; j++){
+            for(int k = j+1; k<fCount; k++){
+                int domi = dominate(coverTable[j], coverTable[k], piCount);
+                if(domi = 1){
+                    for(int a = 0; a<piCount; a++){ //j 가 더 클경우 k 제거
+                        coverTable[k][a] = 0;
+                        flag = true;
+                    }
+                }else if(domi = 2){
+                    for(int a = 0; a<piCount; a++){ //k가 더 클경우 j 제거 후 break
+                        coverTable[j][a] = 0; 
+                        flag = true; break;
+                    }
+                }
+            }
+        }
+    }
+
+    //안끝나는 경우 한쪽을선택해야됨.. 
+
+}
+
 
 int main() {
     cin >> num; //변수의 개수를 입력받음.
