@@ -273,7 +273,7 @@ void minimize(){
                     tmp = i;
                 }
             }
-            if(count=1){ //answer에 넣고 테이블에서 제거
+            if(count==1){ //answer에 넣고 테이블에서 제거
                 answer[ansCount] = PIs[tmp];
                 ansCount++;
                 for(int k = 0; k<fCount; k++){
@@ -286,7 +286,7 @@ void minimize(){
         for(int i = 0; i<piCount-1; i++){
             for(int k = i+1; k<piCount; k++){
                 int domi = dominate(coverTable[i], coverTable[k], fCount);
-                if(domi = 1){
+                if(domi == 1){
                     for(int a = 0; a<fCount; a++){ //i 가 더 클경우 k 제거
                         coverTable[k][a] = 0;
                         flag = true;
@@ -304,12 +304,12 @@ void minimize(){
         for(int j = 0; j<fCount; j++){
             for(int k = j+1; k<fCount; k++){
                 int domi = dominate(coverTable[j], coverTable[k], piCount);
-                if(domi = 1){
+                if(domi == 1){
                     for(int a = 0; a<piCount; a++){ //j 가 더 클경우 k 제거
                         coverTable[k][a] = 0;
                         flag = true;
                     }
-                }else if(domi = 2){
+                }else if(domi == 2){
                     for(int a = 0; a<piCount; a++){ //k가 더 클경우 j 제거 후 break
                         coverTable[j][a] = 0; 
                         flag = true; break;
