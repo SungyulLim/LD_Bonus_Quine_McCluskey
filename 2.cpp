@@ -12,9 +12,9 @@ struct Implicant {
     int mCount;
 };
 
-int num; // 변수의 총 개수 (예: 4이면 x1~x4)
-int fCount; // f=1인 최소항의 개수
-int dcCount; // Don't Care 최소항의 개수
+int num=0; // 변수의 총 개수 (예: 4이면 x1~x4)
+int fCount=0; // f=1인 최소항의 개수
+int dcCount=0; // Don't Care 최소항의 개수
 int fMinterms[MAX]; // f=1인 최소항 번호들을 저장하는 배열
 int dcMinterms[MAX]; // Don't Care 최소항 번호들을 저장하는 배열
 
@@ -116,8 +116,8 @@ Implicant doMerge(Implicant& a, Implicant& b){
 
     // 최소항 배열 초기화 후 양쪽의 최소항들을 합침
     merged.mCount = 0;
-    mergeMinterms(merged, a); // a의 minterms를 merged에 병합
-    mergeMinterms(merged, b); // b의 minterms를 merged에 병합
+    mergeMinterms(a, merged); // a의 minterms를 merged에 병합
+    mergeMinterms(b, merged); // b의 minterms를 merged에 병합
 
     return merged;
 }
@@ -174,7 +174,7 @@ void findPIs(){
                 for (int k = 0; k < nextCount; k++){
                     if (isSame(nextList[k], merged)){
                         // 같은 항이 이미 있으면, 커버하는 최소항 목록만 합침
-                        mergeMinterms(nextList[k], merged);
+                        mergeMinterms(merged, nextList[k]);
                         duplicate = true;
                         break;
                     }
@@ -219,14 +219,25 @@ void findPIs(){
 }
 
 int dominate(int a[], int b[], int length){
+    bool aAllZero = true, bAllZero = true;
     int a_bitmask = 0, b_bitmask = 0; 
     for(int i = 0; i < length; i++){ //배열을 비트마스크로
         if(a[i]==1){
             a_bitmask |= (1 << i);
+            aAllZero = false;
         }
         if(b[i]==1){
             b_bitmask |= (1 << i);
+            bAllZero = false;
         }
+    }
+
+    if(aAllZero || bAllZero){ 
+        return 0; // 둘 다 모두 0이면 서로 지배하지 않음
+    }
+
+    if(a_bitmask ==0 && b_bitmask ==0){ 
+        return 0;
     }
 
     if((a_bitmask & b_bitmask) == a_bitmask){ //b가 a를 포함
@@ -234,7 +245,9 @@ int dominate(int a[], int b[], int length){
     } else if((a_bitmask & b_bitmask) == b_bitmask){ //a가 b를 포함
         return 2;
     }
-    else{ return 0;} //포함하지않음
+    else{
+        return 0;
+    } //포함하지않음
 }
 
 void minimize(){
@@ -275,6 +288,7 @@ void minimize(){
                     }
                 }
                     
+                
                 if(!alreadySelected){
                     answer[ansCount++] = PIs[tmp];
                     // EPI가 커버하는 column 전체 제거 + 해당 row 제거
@@ -286,6 +300,8 @@ void minimize(){
                     }
                     flag = true;
                 }
+                
+                
             }
         }
 
@@ -319,14 +335,14 @@ void minimize(){
                 
                 int domi = dominate(colJ, colK, piCount);
                 
-                if(domi == 1){// k가 j를 지배 -> j 제거
+                if(domi == 1){// Row와 반대로 제거 해야함. 지배하는 것을 제거 
                     for(int a = 0; a < piCount; a++) {
-                        coverTable[a][j] = 0;
+                        coverTable[a][k] = 0;
                     }
                     flag = true;
-                } else if(domi == 2){//j가 k를 지배 -> k 제거
+                } else if(domi == 2){// Row와 반대로 제거 해야함. 지배하는 것을 제거 
                     for(int a = 0; a < piCount; a++){
-                        coverTable[a][k] = 0;
+                        coverTable[a][j] = 0;
                     }
                     flag = true;
                 }
@@ -355,35 +371,36 @@ int main() {
     }
     else{
         for (int i = 0; i < fCount; i++){
+            cout << "f=1인 minterm " << i+1 << "번째 입력 : ";
             cin >> fMinterms[i]; // f=1인 minterm의 번호 입력
         }
     }
     
-
     if(dcCount != 0){
         for (int i = 0; i < dcCount; i++) {
-                cin >> dcMinterms[i]; // DC 번호 입력
-            }
+            cout << "Don't Care minterm " << i+1 << "번째 입력 : ";
+            cin >> dcMinterms[i]; // DC 번호 입력
+        }
     }
-    
-    // PI를 만드는 과정
+
     findPIs();
     minimize();
 
     // --- 결과 출력 ---
     for(int k = 0; k<ansCount; k++){
+        if(k > 0 && k != ansCount){
+            cout << " + ";
+        }
+
         int v = answer[k].value;
         for(int a=0; a<num; a++){
             int msb = (v >> (num-a-1))&1;
             if(((answer[k].mask >> (num-a-1))&1) == 0){
-                cout << "X" << a;
+                cout << "X" << (a+1);
                 if(msb == 0){
                     cout << "'";
                 }
             }
-        }
-        if(k > 0){
-            cout << " + ";
         }
     }
 
